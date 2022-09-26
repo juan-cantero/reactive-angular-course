@@ -15,6 +15,8 @@ import {
 
 import { CoursesService } from "../../services/courses.service";
 import { LoadingService } from "../loading/loading.service";
+import { MessagesService } from "../messages/messages.services";
+import { CoursesStore } from "../../services/courses.store";
 
 @Component({
   selector: "home",
@@ -26,29 +28,15 @@ export class HomeComponent implements OnInit {
 
   advancedCourses$: Observable<Course[]>;
 
-  constructor(
-    private courseService: CoursesService,
-    private loadingService: LoadingService
-  ) {}
+  constructor(private coursesStore: CoursesStore) {}
 
   ngOnInit() {
     this.reloadCourses();
   }
 
   reloadCourses() {
-    const courses$ = this.courseService
-      .loadAllCourses()
-      .pipe(map((courses) => courses.sort(sortCoursesBySeqNo)));
+    this.beginnerCourses$ = this.coursesStore.filterByCategory("BEGINNER");
 
-    // decoro el courses$ para que tenga loading
-    const loadCourses$ = this.loadingService.showLoaderUntilCompleted(courses$);
-
-    this.beginnerCourses$ = loadCourses$.pipe(
-      map((courses) => courses.filter((c) => c.category == "BEGINNER"))
-    );
-
-    this.advancedCourses$ = loadCourses$.pipe(
-      map((courses) => courses.filter((c) => c.category == "ADVANCED"))
-    );
+    this.advancedCourses$ = this.coursesStore.filterByCategory("ADVANCED");
   }
 }
